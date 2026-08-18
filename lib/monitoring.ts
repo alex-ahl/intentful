@@ -4,6 +4,7 @@ import {
   disableBlockAllMode,
   resetBlocks,
   configureActions,
+  getFamilyActivitySelectionId,
 } from "react-native-device-activity";
 import { SELECTION_ID, ACTIVITY_NAME, SHIELD_IDS } from "./constants";
 import { configureAllShields } from "./shield-config";
@@ -29,14 +30,20 @@ const blockActivityName = (block: TimeBlock) => `${ACTIVITY_NAME}-${block}`;
  * - Reconfigures at each time block boundary
  */
 export async function startAwarenessMonitoring(): Promise<void> {
+  console.log("[monitoring] configuring shields...");
   configureAllShields();
 
-  // Compute adaptive thresholds for the current time block
+  console.log("[monitoring] computing thresholds...");
   const currentBlock = getCurrentTimeBlock();
   const thresholds = await computeAdaptiveThresholds(currentBlock);
+  console.log("[monitoring] thresholds:", JSON.stringify(thresholds));
 
+  console.log("[monitoring] starting monitor...");
   await configureMonitoringWithThresholds(currentBlock, thresholds);
+
+  console.log("[monitoring] setting active...");
   await setMonitoringActive(true);
+  console.log("[monitoring] done");
 }
 
 /**
@@ -58,39 +65,55 @@ async function configureMonitoringWithThresholds(
   thresholds: AdaptiveThresholds,
 ): Promise<void> {
   const activityName = blockActivityName(block);
+  console.log("[monitoring] activityName:", activityName);
+
+  // startMonitoring events need the raw base64 selection data, not the ID string
+  const selectionData = getFamilyActivitySelectionId(SELECTION_ID);
+  if (!selectionData) {
+    throw new Error("No app selection found. Please select apps to monitor first.");
+  }
+  console.log("[monitoring] selection data found, length:", selectionData.length);
 
   const deviceActivityEvents = [
     {
-      familyActivitySelection: SELECTION_ID,
+      familyActivitySelection: selectionData,
       threshold: { minute: thresholds.gentle },
       eventName: "threshold-gentle",
       includesPastActivity: false,
     },
     {
-      familyActivitySelection: SELECTION_ID,
+      familyActivitySelection: selectionData,
       threshold: { minute: thresholds.moderate },
       eventName: "threshold-moderate",
       includesPastActivity: false,
     },
     {
-      familyActivitySelection: SELECTION_ID,
+      familyActivitySelection: selectionData,
       threshold: { minute: thresholds.strong },
       eventName: "threshold-strong",
       includesPastActivity: false,
     },
   ];
 
-  await startMonitoring(
-    activityName,
-    {
-      intervalStart: { hour: 0, minute: 0, second: 0 },
-      intervalEnd: { hour: 23, minute: 59, second: 59 },
-      repeats: true,
-    },
-    deviceActivityEvents,
-  );
+  console.log("[monitoring] calling startMonitoring...");
+  try {
+    await startMonitoring(
+      activityName,
+      {
+        intervalStart: { hour: 0, minute: 0, second: 0 },
+        intervalEnd: { hour: 23, minute: 59, second: 59 },
+        repeats: true,
+      },
+      deviceActivityEvents,
+    );
+    console.log("[monitoring] startMonitoring done");
+  } catch (e: any) {
+    console.log("[monitoring] startMonitoring CRASHED:", e?.message ?? String(e));
+    throw e;
+  }
 
   // ── Smart pass-through: NO blocking at start ───────────
+  console.log("[monitoring] configuring actions...");
   configureActions({
     activityName,
     callbackName: "intervalDidStart",

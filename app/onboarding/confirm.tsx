@@ -16,13 +16,24 @@ export default function ConfirmScreen() {
   async function activate() {
     setActivating(true);
     try {
+      console.log("[activate] requesting notifications...");
       await requestNotificationPermissions();
+
+      console.log("[activate] starting monitoring...");
       await startAwarenessMonitoring();
+      console.log("[activate] monitoring started");
+
+      console.log("[activate] scheduling weekly reflection...");
       await scheduleWeeklyReflection();
+
+      console.log("[activate] setting onboarding complete...");
       await setOnboardingComplete(true);
+
+      console.log("[activate] navigating...");
       router.replace("/(tabs)");
-    } catch (e) {
-      Alert.alert("Error", "Failed to activate monitoring. Please try again.");
+    } catch (e: any) {
+      console.log("[activate] error:", e?.message ?? String(e));
+      Alert.alert("Error", `Failed to activate: ${e?.message ?? String(e)}`);
       setActivating(false);
     }
   }

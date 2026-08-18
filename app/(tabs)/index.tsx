@@ -11,6 +11,11 @@ import {
   AdaptiveThresholds,
 } from "@/lib/adaptive";
 import { getTodayOpenCounts } from "@/lib/shortcuts";
+import {
+  getFamilyActivitySelectionId,
+  activitySelectionMetadata,
+} from "react-native-device-activity";
+import { SELECTION_ID } from "@/lib/constants";
 
 const BEHAVIOR_COLORS: Record<BehaviorLevel, string> = {
   intentional: "#34d399",
@@ -38,6 +43,8 @@ export default function DashboardScreen() {
   const [thresholds, setThresholds] = useState<AdaptiveThresholds | null>(null);
   const [adaptiveNotes, setAdaptiveNotes] = useState<string[]>([]);
   const [openCounts, setOpenCounts] = useState<Record<string, number>>({});
+  const [appCount, setAppCount] = useState(0);
+  const [categoryCount, setCategoryCount] = useState(0);
 
   useFocusEffect(
     useCallback(() => {
@@ -47,6 +54,20 @@ export default function DashboardScreen() {
       computeAdaptiveThresholds().then(setThresholds);
       getAdaptiveExplanation().then(setAdaptiveNotes);
       getTodayOpenCounts().then(setOpenCounts);
+
+      // Get monitored app count from Screen Time selection
+      try {
+        const selectionData = getFamilyActivitySelectionId(SELECTION_ID);
+        if (selectionData) {
+          const meta = activitySelectionMetadata(selectionData);
+          if (meta) {
+            setAppCount(meta.applicationCount);
+            setCategoryCount(meta.categoryCount);
+          }
+        }
+      } catch {
+        // Selection not available
+      }
     }, []),
   );
 
@@ -62,9 +83,18 @@ export default function DashboardScreen() {
             { backgroundColor: monitoring ? "#34d399" : "#6b7280" },
           ]}
         />
-        <Text style={styles.statusText}>
-          {monitoring ? "Awareness active" : "Awareness paused"}
-        </Text>
+        <View>
+          <Text style={styles.statusText}>
+            {monitoring ? "Awareness active" : "Awareness paused"}
+          </Text>
+          {(appCount > 0 || categoryCount > 0) && (
+            <Text style={styles.statusDetail}>
+              Monitoring {appCount > 0 ? `${appCount} app${appCount > 1 ? "s" : ""}` : ""}
+              {appCount > 0 && categoryCount > 0 ? ", " : ""}
+              {categoryCount > 0 ? `${categoryCount} categor${categoryCount > 1 ? "ies" : "y"}` : ""}
+            </Text>
+          )}
+        </View>
       </View>
 
       {/* Pattern Insights */}
@@ -233,6 +263,7 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
   statusText: { color: "#e5e7eb", fontSize: 16 },
+  statusDetail: { color: "#6b7280", fontSize: 13, marginTop: 2 },
   sectionTitle: {
     color: "#9ca3af",
     fontSize: 14,

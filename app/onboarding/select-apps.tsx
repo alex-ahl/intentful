@@ -56,10 +56,10 @@ export default function SelectAppsScreen() {
             footerText="You can change these later in settings."
             onSelectionChange={(event: any) => {
               const data = event.nativeEvent;
-              setHasSelection(
-                (data?.applicationCount ?? 0) > 0 ||
-                  (data?.categoryCount ?? 0) > 0,
-              );
+              const appCount = data?.applicationCount ?? 0;
+              const catCount = data?.categoryCount ?? 0;
+              setHasSelection(appCount > 0 || catCount > 0);
+              console.log(`[select-apps] ${appCount} apps, ${catCount} categories selected`);
             }}
             style={styles.picker}
           />
