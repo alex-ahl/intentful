@@ -14,9 +14,3 @@ export type DailyReport = {
   behaviorBreakdown: Record<BehaviorLevel, number>;
   peakHour: number | null;
 };
-
-export type UsageSession = {
-  timestamp: number;
-  /** Which threshold triggered the intervention */
-  level: BehaviorLevel;
-};

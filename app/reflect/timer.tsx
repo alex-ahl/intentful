@@ -15,7 +15,6 @@ const DURATION = 120; // 2 minutes
 export default function TimerScreen() {
   const router = useRouter();
   const [secondsLeft, setSecondsLeft] = useState(DURATION);
-  const [running, setRunning] = useState(true);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const progress = useSharedValue(0);
 

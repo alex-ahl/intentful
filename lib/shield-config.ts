@@ -1,5 +1,5 @@
 import { updateShieldWithId } from "react-native-device-activity";
-import { BehaviorLevel, SHIELD_IDS } from "./constants";
+import { SHIELD_IDS } from "./constants";
 
 type ShieldLevel = "gentle" | "moderate" | "strong";
 
@@ -75,18 +75,4 @@ function configureShield(level: ShieldLevel, shieldId: string): void {
     },
     shieldId,
   );
-}
-
-/**
- * Map behavior level to the appropriate shield level.
- */
-export function shieldIdForBehavior(level: BehaviorLevel): string {
-  switch (level) {
-    case "intentional":
-      return SHIELD_IDS.gentle;
-    case "habitual":
-      return SHIELD_IDS.moderate;
-    case "compulsive":
-      return SHIELD_IDS.strong;
-  }
 }

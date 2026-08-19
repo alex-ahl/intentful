@@ -1,5 +1,5 @@
 import { BehaviorLevel } from "./constants";
-import { getReflectionLog, getTodayReflections } from "./storage";
+import { getTodayReflections } from "./storage";
 
 /**
  * Classify current behavior based on today's reflection entries.

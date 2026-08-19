@@ -57,14 +57,6 @@ export async function getTodayReflections(): Promise<ReflectionEntry[]> {
   return log.filter((entry) => entry.timestamp >= startOfDay.getTime());
 }
 
-export async function getRecentReflections(
-  withinMinutes: number,
-): Promise<ReflectionEntry[]> {
-  const log = await getReflectionLog();
-  const cutoff = Date.now() - withinMinutes * 60 * 1000;
-  return log.filter((entry) => entry.timestamp >= cutoff);
-}
-
 export async function getTodayReport(): Promise<DailyReport> {
   const today = await getTodayReflections();
   const date = new Date().toISOString().split("T")[0];

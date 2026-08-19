@@ -59,7 +59,6 @@ export default function SelectAppsScreen() {
               const appCount = data?.applicationCount ?? 0;
               const catCount = data?.categoryCount ?? 0;
               setHasSelection(appCount > 0 || catCount > 0);
-              console.log(`[select-apps] ${appCount} apps, ${catCount} categories selected`);
             }}
             style={styles.picker}
           />

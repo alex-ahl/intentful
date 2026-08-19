@@ -1,7 +1,6 @@
 // ── Identifiers ──────────────────────────────────────────
 export const SELECTION_ID = "monitored-apps";
 export const ACTIVITY_NAME = "attention-monitor";
-export const APP_GROUP = "group.intentful.shared";
 
 // ── Behavior Classification ──────────────────────────────
 export type BehaviorLevel = "intentional" | "habitual" | "compulsive";

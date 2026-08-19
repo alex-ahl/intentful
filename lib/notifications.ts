@@ -47,32 +47,8 @@ export async function schedulePostSessionNudge(): Promise<void> {
   });
 }
 
-export async function scheduleBingeReflection(
-  cumulativeMinutes: number,
-): Promise<void> {
-  await Notifications.cancelScheduledNotificationAsync("binge-alert").catch(
-    () => {},
-  );
-
-  await Notifications.scheduleNotificationAsync({
-    identifier: "binge-alert",
-    content: {
-      title: "That was a long session",
-      body: `You spent about ${cumulativeMinutes} minutes in monitored apps. What were you looking for?`,
-      data: { type: "binge-reflection" },
-    },
-    trigger: {
-      type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL,
-      seconds: 60,
-    },
-  });
-}
-
 export async function cancelPendingNudges(): Promise<void> {
   await Notifications.cancelScheduledNotificationAsync("post-session").catch(
-    () => {},
-  );
-  await Notifications.cancelScheduledNotificationAsync("binge-alert").catch(
     () => {},
   );
 }

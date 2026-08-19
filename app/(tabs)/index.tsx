@@ -1,6 +1,6 @@
 import { useState, useCallback } from "react";
-import { View, Text, StyleSheet, ScrollView, Pressable } from "react-native";
-import { useFocusEffect, useRouter } from "expo-router";
+import { View, Text, StyleSheet, ScrollView } from "react-native";
+import { useFocusEffect } from "expo-router";
 import { isMonitoringActive, getTodayReport } from "@/lib/storage";
 import { REASONS, ReasonKey, BehaviorLevel } from "@/lib/constants";
 import { DailyReport } from "@/lib/types";
@@ -36,7 +36,6 @@ const SEVERITY_COLORS: Record<PatternInsight["severity"], string> = {
 };
 
 export default function DashboardScreen() {
-  const router = useRouter();
   const [monitoring, setMonitoring] = useState(false);
   const [report, setReport] = useState<DailyReport | null>(null);
   const [patterns, setPatterns] = useState<PatternInsight[]>([]);
@@ -59,7 +58,10 @@ export default function DashboardScreen() {
       try {
         const selectionData = getFamilyActivitySelectionId(SELECTION_ID);
         if (selectionData) {
-          const meta = activitySelectionMetadata(selectionData);
+          // Must be wrapped as a token object — passing the raw string throws
+          const meta = activitySelectionMetadata({
+            activitySelectionToken: selectionData,
+          });
           if (meta) {
             setAppCount(meta.applicationCount);
             setCategoryCount(meta.categoryCount);

@@ -1,6 +1,6 @@
 import { getReflectionLog } from "./storage";
 import { ReflectionEntry } from "./types";
-import { THRESHOLDS, BehaviorLevel } from "./constants";
+import { THRESHOLDS } from "./constants";
 
 // ── Time blocks ──────────────────────────────────────────
 
@@ -19,15 +19,6 @@ export function getCurrentTimeBlock(): TimeBlock {
   if (hour >= 12 && hour < 17) return "afternoon";
   if (hour >= 17 && hour < 21) return "evening";
   return "night";
-}
-
-export function getNextTimeBlock(
-  block: TimeBlock,
-): { block: TimeBlock; startHour: number } {
-  const order: TimeBlock[] = ["morning", "afternoon", "evening", "night"];
-  const idx = order.indexOf(block);
-  const next = order[(idx + 1) % order.length];
-  return { block: next, startHour: TIME_BLOCK_HOURS[next][0] };
 }
 
 // ── Adaptive thresholds ──────────────────────────────────

@@ -27,11 +27,6 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
         "Used to verify identity when changing settings",
     },
   },
-  web: {
-    bundler: "metro",
-    output: "static",
-    favicon: "./assets/images/favicon.png",
-  },
   plugins: [
     "expo-router",
     "expo-notifications",
@@ -82,13 +77,6 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
                 bundleIdentifier: `${BUNDLE_ID}.ShieldAction`,
                 entitlements: {
                   "com.apple.developer.family-controls": true,
-                  "com.apple.security.application-groups": [APP_GROUP],
-                },
-              },
-              {
-                targetName: "AttentionWidget",
-                bundleIdentifier: `${BUNDLE_ID}.AttentionWidget`,
-                entitlements: {
                   "com.apple.security.application-groups": [APP_GROUP],
                 },
               },

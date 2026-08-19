@@ -1,6 +1,5 @@
 import { getReflectionLog } from "./storage";
 import { ReflectionEntry } from "./types";
-import { BehaviorLevel } from "./constants";
 
 export type PatternInsight = {
   type: "time_of_day" | "day_of_week" | "streak" | "escalation";

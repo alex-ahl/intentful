@@ -1,4 +1,3 @@
-import { useFonts } from "expo-font";
 import { Stack, useRouter } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect, useState } from "react";
@@ -16,22 +15,14 @@ import {
   scheduleWeeklyReflection,
 } from "@/lib/notifications";
 import { reconfigureForCurrentBlock } from "@/lib/monitoring";
-import { updateWidgetData } from "@/lib/widget";
 
 export { ErrorBoundary } from "expo-router";
 
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
-  const [loaded, error] = useFonts({
-    SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
-  });
   const [onboarded, setOnboarded] = useState<boolean | null>(null);
   const router = useRouter();
-
-  useEffect(() => {
-    if (error) throw error;
-  }, [error]);
 
   useEffect(() => {
     isOnboardingComplete().then((complete) => {
@@ -42,13 +33,13 @@ export default function RootLayout() {
   }, []);
 
   useEffect(() => {
-    if (loaded && onboarded !== null) {
+    if (onboarded !== null) {
       SplashScreen.hideAsync();
       if (!onboarded) {
         router.replace("/onboarding/welcome");
       }
     }
-  }, [loaded, onboarded]);
+  }, [onboarded]);
 
   // When app comes to foreground from a notification, cancel pending nudges
   // and route to reflection if needed
@@ -56,10 +47,7 @@ export default function RootLayout() {
     const subscription =
       Notifications.addNotificationResponseReceivedListener((response) => {
         const data = response.notification.request.content.data;
-        if (
-          data?.type === "post-session" ||
-          data?.type === "binge-reflection"
-        ) {
+        if (data?.type === "post-session") {
           router.push("/(tabs)");
         }
       });
@@ -80,9 +68,8 @@ export default function RootLayout() {
     });
     const linkingSubscription = Linking.addEventListener("url", handleURL);
 
-    // Cancel nudges when app opens and update widget
+    // Cancel nudges when app opens
     cancelPendingNudges();
-    updateWidgetData();
 
     // Reconfigure adaptive thresholds when app foregrounds
     // (covers time-block transitions while app was backgrounded)
@@ -94,7 +81,6 @@ export default function RootLayout() {
             if (active) reconfigureForCurrentBlock();
           });
           cancelPendingNudges();
-          updateWidgetData();
         }
       },
     );
@@ -106,7 +92,7 @@ export default function RootLayout() {
     };
   }, []);
 
-  if (!loaded || onboarded === null) {
+  if (onboarded === null) {
     return null;
   }
 

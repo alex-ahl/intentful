@@ -9,7 +9,8 @@ iOS "Attention Awareness Layer" app built with Expo. Instead of blocking or dela
 - **expo-router** for file-based routing
 - **react-native-device-activity** v0.6.1 (Kingstinct) for Apple Screen Time APIs
 - **AsyncStorage** for persistence
-- **WidgetKit** (native Swift) for iOS home screen widget
+
+iOS-only — there is no web or Android target.
 
 ## Running
 
@@ -60,17 +61,15 @@ lib/
   constants.ts                # Thresholds, reasons, alternatives, behavior levels
   device-activity.ts          # Screen Time API wrapper
   monitoring.ts               # Start/stop monitoring, configure escalating actions
-  notifications.ts            # Post-session nudges, binge alerts, weekly reflection
+  notifications.ts            # Post-session nudges, weekly reflection
   patterns.ts                 # Pattern detection (time-of-day, streaks, escalation)
   shield-config.ts            # 3 escalating shield configurations
   shortcuts.ts                # App open tracking via Shortcuts deep links
   storage.ts                  # AsyncStorage helpers, reflection log, daily reports
-  types.ts                    # ReflectionEntry, DailyReport, UsageSession
-  widget.ts                   # Write data to shared UserDefaults for WidgetKit
+  types.ts                    # ReflectionEntry, DailyReport
 plugins/
   withAutoSigning.js          # Config plugin: sets CODE_SIGN_STYLE=Automatic on all targets
-targets/
-  AttentionWidget/            # Native SwiftUI WidgetKit extension
+targets/                      # Vendored — overwritten from node_modules on every prebuild
   ActivityMonitorExtension/   # DeviceActivity monitor extension
   ShieldConfiguration/        # Shield UI extension
   ShieldAction/               # Shield action handler extension
@@ -89,9 +88,10 @@ scripts/
 - **iOS Deployment Target**: 16.0
 
 ### Apple Developer Portal Registrations
-- 5 App IDs: `app.intentful.ios`, `.ActivityMonitorExtension`, `.ShieldConfiguration`, `.ShieldAction`, `.AttentionWidget`
+- 4 App IDs in use: `app.intentful.ios`, `.ActivityMonitorExtension`, `.ShieldConfiguration`, `.ShieldAction`
+  (a 5th, `.AttentionWidget`, is still registered in the portal but the widget target was removed)
 - 1 App Group: `group.intentful.shared`
-- Capabilities: Family Controls (Development) + App Groups on extensions, App Groups only on widget
+- Capabilities: Family Controls (Development) + App Groups on extensions
 
 ## Important Notes
 

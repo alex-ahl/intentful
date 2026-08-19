@@ -2,7 +2,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const OPEN_LOG_KEY = "shortcut_open_log";
 
-export type AppOpenEvent = {
+type AppOpenEvent = {
   timestamp: number;
   appName: string;
 };
@@ -20,7 +20,7 @@ export async function recordAppOpen(appName: string): Promise<void> {
 /**
  * Get the full app open log.
  */
-export async function getAppOpenLog(): Promise<AppOpenEvent[]> {
+async function getAppOpenLog(): Promise<AppOpenEvent[]> {
   const raw = await AsyncStorage.getItem(OPEN_LOG_KEY);
   if (!raw) return [];
   return JSON.parse(raw);
@@ -41,20 +41,6 @@ export async function getTodayOpenCounts(): Promise<Record<string, number>> {
     }
   }
   return counts;
-}
-
-/**
- * Get opens in the last N minutes for a specific app.
- */
-export async function getRecentOpens(
-  appName: string,
-  withinMinutes: number,
-): Promise<number> {
-  const log = await getAppOpenLog();
-  const cutoff = Date.now() - withinMinutes * 60 * 1000;
-  return log.filter(
-    (e) => e.appName === appName && e.timestamp >= cutoff,
-  ).length;
 }
 
 /**

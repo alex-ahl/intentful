@@ -10,7 +10,6 @@ import {
   Alternative,
 } from "@/lib/constants";
 import { addReflectionEntry } from "@/lib/storage";
-import { updateWidgetData } from "@/lib/widget";
 
 export default function AlternativesScreen() {
   const router = useRouter();
@@ -23,7 +22,7 @@ export default function AlternativesScreen() {
 
   // If intentional, log and let them go
   if (reason === "intentional") {
-    addReflectionEntry("intentional", null, behaviorLevel).then(updateWidgetData);
+    addReflectionEntry("intentional", null, behaviorLevel);
     router.replace("/(tabs)");
     return null;
   }
@@ -36,7 +35,6 @@ export default function AlternativesScreen() {
   async function handleAlternative(alt: Alternative) {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     await addReflectionEntry(reason, alt.id, behaviorLevel);
-    updateWidgetData();
 
     if (alt.type === "timer") {
       router.push("/reflect/timer");
