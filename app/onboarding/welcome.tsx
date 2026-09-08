@@ -9,7 +9,7 @@ export default function WelcomeScreen() {
     <SafeAreaView style={styles.container}>
       <View style={styles.hero}>
         <Text style={styles.icon}>✋</Text>
-        <Text style={styles.title}>Intent Filter</Text>
+        <Text style={styles.title}>Intentful</Text>
         <Text style={styles.subtitle}>
           Not a blocker. Not a timer.{"\n"}An awareness layer that learns your patterns.
         </Text>

@@ -6,7 +6,7 @@ const APP_GROUP = "group.intentful.shared";
 export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
   name: "Intentful",
-  slug: "habit-filter",
+  slug: "intentful",
   version: "1.0.0",
   orientation: "portrait",
   icon: "./assets/images/icon.png",
