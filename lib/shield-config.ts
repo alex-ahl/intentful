@@ -1,13 +1,7 @@
 import { updateShield } from "react-native-device-activity";
 import { SELECTION_ID, REARM_ACTIVITY_NAME, REARM_MINUTES } from "./constants";
 
-/**
- * The one shield: "Are you sure?" over every selected app.
- *
- * "Yes" lifts the block and schedules a one-off DeviceActivity interval; its
- * intervalDidEnd re-applies the block (wired in monitoring.ts). iOS shields
- * allow exactly two buttons, which is all this app needs.
- */
+// iOS shields allow exactly two buttons.
 export function configureShield(): void {
   updateShield(
     {
@@ -26,8 +20,8 @@ export function configureShield(): void {
     },
     {
       primary: {
-        // defer keeps the shield alive while the actions run; lifting the block
-        // is what actually reveals the app.
+        // "defer" is not "do nothing" — it holds the shield while the actions
+        // run, and lifting the block is what reveals the app.
         behavior: "defer",
         actions: [
           { type: "unblockSelection", familyActivitySelectionId: SELECTION_ID },
