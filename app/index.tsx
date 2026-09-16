@@ -1,14 +1,31 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { View, Text, StyleSheet, Switch, Pressable, Alert } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useFocusEffect } from "expo-router";
 import { DeviceActivitySelectionViewPersisted } from "react-native-device-activity";
 import { requestScreenTimeAuth, getAuthStatus } from "@/lib/device-activity";
-import { arm, disarm, isArmed } from "@/lib/monitoring";
+import {
+  arm,
+  disarm,
+  isArmed,
+  isShielded,
+  countSelected,
+} from "@/lib/monitoring";
 import { SELECTION_ID, REARM_MINUTES } from "@/lib/constants";
 
 export default function HomeScreen() {
   const [approved, setApproved] = useState(() => getAuthStatus() === "approved");
   const [armed, setArmed] = useState(() => isArmed());
+  const [shielded, setShielded] = useState(() => isShielded());
+  const [selected, setSelected] = useState(() => countSelected());
+
+  useFocusEffect(
+    useCallback(() => {
+      setArmed(isArmed());
+      setShielded(isShielded());
+      setSelected(countSelected());
+    }, []),
+  );
 
   async function grantAccess() {
     const status = await requestScreenTimeAuth();
@@ -29,7 +46,11 @@ export default function HomeScreen() {
       } else {
         disarm();
       }
-      setArmed(value);
+      // Read back rather than trusting the call — this is the only confirmation
+      // that the system actually applied it.
+      setArmed(isArmed());
+      setShielded(isShielded());
+      setSelected(countSelected());
     } catch (e: any) {
       Alert.alert("Couldn't turn that on", e?.message ?? String(e));
     }
@@ -65,10 +86,8 @@ export default function HomeScreen() {
       <View style={styles.row}>
         <View style={{ flex: 1 }}>
           <Text style={styles.rowTitle}>Ask before opening</Text>
-          <Text style={styles.rowSubtitle}>
-            {armed
-              ? `On — "Yes" lets you in for ${REARM_MINUTES} minutes`
-              : "Off"}
+          <Text style={[styles.rowSubtitle, armed && styles.rowSubtitleOn]}>
+            {status(armed, shielded, selected)}
           </Text>
         </View>
         <Switch
@@ -80,6 +99,20 @@ export default function HomeScreen() {
       </View>
     </SafeAreaView>
   );
+}
+
+function status(armed: boolean, shielded: boolean, selected: number): string {
+  if (!armed) {
+    return selected > 0
+      ? `Off — ${selected} selected`
+      : "Off — nothing selected";
+  }
+
+  if (shielded) {
+    return `On — ${selected} shielded, icons look dimmed`;
+  }
+
+  return `On — open for up to ${REARM_MINUTES} min, then it asks again`;
 }
 
 const styles = StyleSheet.create({
@@ -109,6 +142,7 @@ const styles = StyleSheet.create({
   },
   rowTitle: { color: "#e5e7eb", fontSize: 16, fontWeight: "600" },
   rowSubtitle: { color: "#6b7280", fontSize: 13, marginTop: 2 },
+  rowSubtitleOn: { color: "#34d399" },
   button: {
     backgroundColor: "#818cf8",
     paddingVertical: 16,
