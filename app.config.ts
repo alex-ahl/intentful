@@ -1,7 +1,9 @@
 import { ExpoConfig, ConfigContext } from "expo/config";
 
-const BUNDLE_ID = "app.intentful.ios";
-const APP_GROUP = "group.intentful.shared";
+// Overridable so anyone can build this with their own Apple account.
+const BUNDLE_ID = process.env.BUNDLE_ID ?? "app.intentful.ios";
+const APP_GROUP = process.env.APP_GROUP ?? "group.intentful.shared";
+const APPLE_TEAM_ID = process.env.APPLE_TEAM_ID ?? "APPLE_TEAM_ID";
 
 export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
@@ -21,7 +23,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   ios: {
     supportsTablet: false,
     bundleIdentifier: BUNDLE_ID,
-    appleTeamId: "APPLE_TEAM_ID",
+    appleTeamId: APPLE_TEAM_ID,
     infoPlist: {
       NSFaceIDUsageDescription:
         "Used to verify identity when changing settings",
@@ -29,8 +31,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   },
   plugins: [
     "expo-router",
-    "expo-notifications",
-    ["./plugins/withAutoSigning", { teamId: "APPLE_TEAM_ID" }],
+    ["./plugins/withAutoSigning", { teamId: APPLE_TEAM_ID }],
     [
       "expo-build-properties",
       {
@@ -43,7 +44,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       "react-native-device-activity",
       {
         appGroup: APP_GROUP,
-        appleTeamId: "APPLE_TEAM_ID",
+        appleTeamId: APPLE_TEAM_ID,
       },
     ],
   ],

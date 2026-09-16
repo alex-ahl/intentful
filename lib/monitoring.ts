@@ -1,165 +1,43 @@
 import {
-  startMonitoring,
+  blockSelection,
+  unblockSelection,
   stopMonitoring,
-  disableBlockAllMode,
-  resetBlocks,
   configureActions,
   getFamilyActivitySelectionId,
+  isShieldActive,
 } from "react-native-device-activity";
-import { SELECTION_ID, ACTIVITY_NAME, SHIELD_IDS } from "./constants";
-import { configureAllShields } from "./shield-config";
-import { setMonitoringActive } from "./storage";
-import {
-  computeAdaptiveThresholds,
-  getCurrentTimeBlock,
-  AdaptiveThresholds,
-  TimeBlock,
-} from "./adaptive";
-
-// Activity names for time-block scheduling
-const blockActivityName = (block: TimeBlock) => `${ACTIVITY_NAME}-${block}`;
+import { SELECTION_ID, REARM_ACTIVITY_NAME } from "./constants";
+import { configureShield } from "./shield-config";
 
 /**
- * Start the Attention Awareness Layer with adaptive thresholds.
- *
- * The key differentiator: friction adapts to YOUR patterns.
- * - First opens are free (smart pass-through)
- * - Thresholds tighten during your historically bad hours
- * - Thresholds relax when you've been doing well
- * - Reconfigures at each time block boundary
+ * Apply the shield to the selected apps. It stays applied, so every open of a
+ * selected app is intercepted — no schedule or usage threshold involved.
  */
-export async function startAwarenessMonitoring(): Promise<void> {
-  configureAllShields();
-
-  const currentBlock = getCurrentTimeBlock();
-  const thresholds = await computeAdaptiveThresholds(currentBlock);
-
-  await configureMonitoringWithThresholds(currentBlock, thresholds);
-  await setMonitoringActive(true);
-}
-
-/**
- * Reconfigure monitoring for the current time block.
- * Call this at time-block boundaries (morning → afternoon, etc.)
- * or when adaptive thresholds should be re-evaluated.
- */
-export async function reconfigureForCurrentBlock(): Promise<void> {
-  const currentBlock = getCurrentTimeBlock();
-  const thresholds = await computeAdaptiveThresholds(currentBlock);
-
-  // Stop existing monitoring, reconfigure, restart
-  stopMonitoring();
-  await configureMonitoringWithThresholds(currentBlock, thresholds);
-}
-
-async function configureMonitoringWithThresholds(
-  block: TimeBlock,
-  thresholds: AdaptiveThresholds,
-): Promise<void> {
-  const activityName = blockActivityName(block);
-
-  // startMonitoring events need the raw base64 selection data, not the ID string
-  const selectionData = getFamilyActivitySelectionId(SELECTION_ID);
-  if (!selectionData) {
-    throw new Error(
-      "No app selection found. Please select apps to monitor first.",
-    );
+export function arm(): void {
+  if (!getFamilyActivitySelectionId(SELECTION_ID)) {
+    throw new Error("Pick at least one app first.");
   }
 
-  const deviceActivityEvents = [
-    {
-      familyActivitySelection: selectionData,
-      threshold: { minute: thresholds.gentle },
-      eventName: "threshold-gentle",
-      includesPastActivity: false,
-    },
-    {
-      familyActivitySelection: selectionData,
-      threshold: { minute: thresholds.moderate },
-      eventName: "threshold-moderate",
-      includesPastActivity: false,
-    },
-    {
-      familyActivitySelection: selectionData,
-      threshold: { minute: thresholds.strong },
-      eventName: "threshold-strong",
-      includesPastActivity: false,
-    },
-  ];
+  configureShield();
 
-  await startMonitoring(
-    activityName,
-    {
-      intervalStart: { hour: 0, minute: 0, second: 0 },
-      intervalEnd: { hour: 23, minute: 59, second: 59 },
-      repeats: true,
-    },
-    deviceActivityEvents,
-  );
-
-  // ── Smart pass-through: NO blocking at start ───────────
+  // The shield's "Yes" starts a one-off interval under this name; when it ends
+  // the monitor extension runs this action and the shield is back.
   configureActions({
-    activityName,
-    callbackName: "intervalDidStart",
-    actions: [],
-  });
-
-  // ── Escalating shields ─────────────────────────────────
-  configureActions({
-    activityName,
-    callbackName: "eventDidReachThreshold",
-    eventName: "threshold-gentle",
-    actions: [
-      {
-        type: "blockSelection",
-        familyActivitySelectionId: SELECTION_ID,
-        shieldId: SHIELD_IDS.gentle,
-      },
-    ],
-  });
-
-  configureActions({
-    activityName,
-    callbackName: "eventDidReachThreshold",
-    eventName: "threshold-moderate",
-    actions: [
-      {
-        type: "blockSelection",
-        familyActivitySelectionId: SELECTION_ID,
-        shieldId: SHIELD_IDS.moderate,
-      },
-    ],
-  });
-
-  configureActions({
-    activityName,
-    callbackName: "eventDidReachThreshold",
-    eventName: "threshold-strong",
-    actions: [
-      {
-        type: "blockSelection",
-        familyActivitySelectionId: SELECTION_ID,
-        shieldId: SHIELD_IDS.strong,
-      },
-    ],
-  });
-
-  // ── Reset at end of day ────────────────────────────────
-  configureActions({
-    activityName,
+    activityName: REARM_ACTIVITY_NAME,
     callbackName: "intervalDidEnd",
     actions: [
-      { type: "unblockSelection", familyActivitySelectionId: SELECTION_ID },
+      { type: "blockSelection", familyActivitySelectionId: SELECTION_ID },
     ],
   });
+
+  blockSelection({ activitySelectionId: SELECTION_ID });
 }
 
-/**
- * Stop all monitoring and remove shields.
- */
-export async function stopAllMonitoring(): Promise<void> {
+export function disarm(): void {
   stopMonitoring();
-  resetBlocks();
-  disableBlockAllMode();
-  await setMonitoringActive(false);
+  unblockSelection({ activitySelectionId: SELECTION_ID });
+}
+
+export function isArmed(): boolean {
+  return isShieldActive();
 }

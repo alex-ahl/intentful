@@ -1,78 +1,48 @@
-import { updateShieldWithId } from "react-native-device-activity";
-import { SHIELD_IDS } from "./constants";
-
-type ShieldLevel = "gentle" | "moderate" | "strong";
-
-const SHIELD_CONFIGS: Record<
-  ShieldLevel,
-  {
-    title: string;
-    subtitle: string;
-    primaryLabel: string;
-    secondaryLabel: string;
-    iconSystemName: string;
-  }
-> = {
-  gentle: {
-    title: "Hey.",
-    subtitle: "You've been on this a while.\nStill intentional?",
-    primaryLabel: "Yes, continue",
-    secondaryLabel: "Nevermind",
-    iconSystemName: "eye",
-  },
-  moderate: {
-    title: "Pause.",
-    subtitle: "You've opened this several times recently.\nWhat's pulling you back?",
-    primaryLabel: "I have a reason",
-    secondaryLabel: "Close app",
-    iconSystemName: "hand.raised",
-  },
-  strong: {
-    title: "You're in a loop.",
-    subtitle: "This is the pattern you wanted to break.\nTake a breath.",
-    primaryLabel: "I know — let me reflect",
-    secondaryLabel: "Close app",
-    iconSystemName: "hand.raised.fill",
-  },
-};
+import { updateShield } from "react-native-device-activity";
+import { SELECTION_ID, REARM_ACTIVITY_NAME, REARM_MINUTES } from "./constants";
 
 /**
- * Configure all three shield levels upfront.
- * The monitoring system activates the appropriate one based on behavior.
+ * The one shield: "Are you sure?" over every selected app.
+ *
+ * "Yes" lifts the block and schedules a one-off DeviceActivity interval; its
+ * intervalDidEnd re-applies the block (wired in monitoring.ts). iOS shields
+ * allow exactly two buttons, which is all this app needs.
  */
-export function configureAllShields(): void {
-  configureShield("gentle", SHIELD_IDS.gentle);
-  configureShield("moderate", SHIELD_IDS.moderate);
-  configureShield("strong", SHIELD_IDS.strong);
-}
-
-function configureShield(level: ShieldLevel, shieldId: string): void {
-  const cfg = SHIELD_CONFIGS[level];
-
-  updateShieldWithId(
+export function configureShield(): void {
+  updateShield(
     {
       backgroundBlurStyle: 6, // systemMaterialDark
-      title: cfg.title,
+      title: "Are you sure?",
       titleColor: { red: 255, green: 255, blue: 255 },
-      subtitle: cfg.subtitle,
+      subtitle: "Do you really want to open this app?",
       subtitleColor: { red: 180, green: 180, blue: 190 },
-      iconSystemName: cfg.iconSystemName,
+      iconSystemName: "hand.raised",
       iconTint: { red: 129, green: 140, blue: 248 },
-      primaryButtonLabel: cfg.primaryLabel,
+      primaryButtonLabel: "Yes",
       primaryButtonBackgroundColor: { red: 99, green: 102, blue: 241 },
       primaryButtonLabelColor: { red: 255, green: 255, blue: 255 },
-      secondaryButtonLabel: cfg.secondaryLabel,
+      secondaryButtonLabel: "No",
       secondaryButtonLabelColor: { red: 140, green: 140, blue: 150 },
     },
     {
       primary: {
+        // defer keeps the shield alive while the actions run; lifting the block
+        // is what actually reveals the app.
         behavior: "defer",
-        actions: [{ type: "openApp" }],
+        actions: [
+          { type: "unblockSelection", familyActivitySelectionId: SELECTION_ID },
+          {
+            type: "startMonitoring",
+            activityName: REARM_ACTIVITY_NAME,
+            deviceActivityEvents: [],
+            intervalStartDelayMs: 0,
+            intervalEndDelayMs: REARM_MINUTES * 60 * 1000,
+          },
+        ],
       },
       secondary: {
         behavior: "close",
       },
     },
-    shieldId,
   );
 }

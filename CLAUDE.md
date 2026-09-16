@@ -1,106 +1,74 @@
 # Intentful
 
-iOS "Attention Awareness Layer" app built with Expo. Instead of blocking or delaying apps, it detects behavioral patterns silently and introduces adaptive friction only when autopilot behavior is detected.
+iOS app with exactly one behaviour: opening a selected app shows a shield asking
+"Are you sure you really want to open this app?". Yes → 15 minutes of access.
+No → the app closes. MIT, open source, on-device only.
+
+Deliberately minimal. Resist adding features — the previous version of this app
+had adaptive thresholds, a reflection flow, pattern detection and notifications,
+and was stripped back to this on purpose.
 
 ## Stack
 
-- **Expo SDK 54** with development builds (bare workflow via `expo-dev-client`)
-- **React Native 0.81** with new architecture enabled
-- **expo-router** for file-based routing
-- **react-native-device-activity** v0.6.1 (Kingstinct) for Apple Screen Time APIs
-- **AsyncStorage** for persistence
+- **Expo SDK 54**, development builds (`expo-dev-client`)
+- **React Native 0.81**, new architecture
+- **expo-router** (two files: a layout and one screen)
+- **react-native-device-activity** v0.6.1 for the Screen Time APIs
 
-iOS-only — there is no web or Android target.
+iOS only. No web, no Android, no backend, no persistence beyond what the
+Screen Time APIs store natively.
 
 ## Running
 
 ```bash
-# Build and install on physical device
-npm run build
-
-# Start dev server (tunnel mode, works across networks)
-npm run dev
-
-# TypeScript check
+npm run build      # prebuild → xcodebuild → install on connected iPhone
+npm run dev        # dev server on the LAN (add -- --tunnel across networks)
 npm run typecheck
 ```
 
-Requires physical iPhone connected via USB for build. Dev server uses `--tunnel` so phone and computer don't need same WiFi.
+Needs a physical iPhone over USB. `APPLE_TEAM_ID`, `BUNDLE_ID` and `APP_GROUP`
+are read from the environment with the maintainer's values as fallback.
 
-## Architecture
+The dev client only auto-discovers servers advertised on the local network, so
+`--tunnel` is opt-in rather than the default — it works across networks but
+forces manual URL entry.
 
-### 3-Layer System
-1. **Detection** — Silent monitoring via DeviceActivity time thresholds + Shortcuts-based per-app open tracking
-2. **Classification** — Categorizes behavior as intentional / habitual / compulsive based on daily interaction count
-3. **Intervention** — Adaptive shields that escalate: gentle → moderate → strong
+## How the one behaviour works
 
-### Adaptive Rules Engine (`lib/adaptive.ts`)
-Thresholds adjust dynamically based on 5 multiplicative rules: time-block intensity, day-of-week patterns, compulsive-free streak bonus, week-over-week trend. Time blocks: morning/afternoon/evening/night.
+DeviceActivity can only fire on cumulative minutes, never on an app being
+opened. So there is no threshold: `arm()` applies `blockSelection` and leaves it
+applied, and a permanently shielded app shows its shield on every open.
 
-### Shield System
-iOS Shield UI only supports 2 buttons. Shield = brief pause prompt; the richer reflection flow lives in the React Native app. Three escalating shields configured in `lib/shield-config.ts`.
+The shield's **Yes** button runs two actions: `unblockSelection`, then
+`startMonitoring` for a one-off interval named `rearm`. When that interval ends,
+the monitor extension runs the `intervalDidEnd` action registered by `arm()`,
+which re-applies `blockSelection`.
 
-### Shortcuts Integration
-- Pre-built shortcut shared via iCloud link (set `SHORTCUT_ICLOUD_LINK` in `lib/shortcuts.ts`)
-- Users still must manually create per-app automations (Apple limitation)
-- Deep link: `intentful://opened?app=AppName` → recorded by `_layout.tsx`
-
-## Key Files
+## Key files
 
 ```
-app/
-  _layout.tsx                 # Root layout, deep link handler, foreground reconfiguration
-  (tabs)/index.tsx            # Dashboard: patterns, adaptive thresholds, daily report, monitored app count
-  (tabs)/settings.tsx         # Awareness toggle, shortcuts setup, clear data
-  onboarding/                 # welcome → select-apps → confirm
-  reflect/                    # why → alternatives → timer/breathe
-  shortcuts-setup.tsx         # Shortcuts automation setup flow (iCloud link or manual URL copy)
-lib/
-  adaptive.ts                 # Adaptive threshold rules engine
-  classification.ts           # Behavior classification (intentional/habitual/compulsive)
-  constants.ts                # Thresholds, reasons, alternatives, behavior levels
-  device-activity.ts          # Screen Time API wrapper
-  monitoring.ts               # Start/stop monitoring, configure escalating actions
-  notifications.ts            # Post-session nudges, weekly reflection
-  patterns.ts                 # Pattern detection (time-of-day, streaks, escalation)
-  shield-config.ts            # 3 escalating shield configurations
-  shortcuts.ts                # App open tracking via Shortcuts deep links
-  storage.ts                  # AsyncStorage helpers, reflection log, daily reports
-  types.ts                    # ReflectionEntry, DailyReport
-plugins/
-  withAutoSigning.js          # Config plugin: sets CODE_SIGN_STYLE=Automatic on all targets
-targets/                      # Vendored — overwritten from node_modules on every prebuild
-  ActivityMonitorExtension/   # DeviceActivity monitor extension
-  ShieldConfiguration/        # Shield UI extension
-  ShieldAction/               # Shield action handler extension
-scripts/
-  build.sh                    # Full build: prebuild → xcodebuild → install on device
-  dev.sh                      # Start dev server with tunnel
+app/_layout.tsx       Stack only
+app/index.tsx         the whole UI: picker + toggle
+lib/constants.ts      SELECTION_ID, REARM_ACTIVITY_NAME, REARM_MINUTES
+lib/device-activity.ts  authorization wrapper
+lib/monitoring.ts     arm() / disarm() / isArmed()
+lib/shield-config.ts  shield copy and the Yes/No actions
+plugins/withAutoSigning.js  CODE_SIGN_STYLE=Automatic on all targets
+targets/              vendored — overwritten from node_modules on every prebuild
 ```
 
-## Configuration
+## Constraints worth knowing
 
-- **Bundle ID**: `app.intentful.ios`
-- **App Group**: `group.intentful.shared`
-- **URL Scheme**: `intentful`
-- **Apple Team ID**: `APPLE_TEAM_ID` (set in `app.config.ts`)
-- **Apple ID**: `6761717073`
-- **iOS Deployment Target**: 16.0
-
-### Apple Developer Portal Registrations
-- 4 App IDs in use: `app.intentful.ios`, `.ActivityMonitorExtension`, `.ShieldConfiguration`, `.ShieldAction`
-  (a 5th, `.AttentionWidget`, is still registered in the portal but the widget target was removed)
-- 1 App Group: `group.intentful.shared`
-- Capabilities: Family Controls (Development) + App Groups on extensions
-
-## Important Notes
-
-- Screen Time APIs only work on physical iOS devices, not Simulator
-- `startMonitoring` events need the **raw base64 selection data** from `getFamilyActivitySelectionId()`, NOT the selection ID string — passing the ID string causes a native crash
-- DeviceActivity events are TIME-based thresholds only (cumulative minutes), not open-count-based
-- Minimum effective threshold is 15 minutes (Apple limitation)
-- Maximum 20 simultaneous DeviceActivity monitors
-- Family Controls (Development) entitlement works immediately for testing; Distribution entitlement requires separate Apple approval
-- The `SHORTCUT_ICLOUD_LINK` in `lib/shortcuts.ts` needs to be set with a real iCloud link once the shortcut is created
-- Xcode must have Apple ID signed in (one-time: Xcode → Settings → Accounts) for builds to work
-- A reusable template extracted from this project lives at `~/git/expo-template`
+- Screen Time APIs only work on physical devices, never the Simulator
+- **15 minutes is Apple's minimum DeviceActivity schedule** — the re-arm window
+  cannot be shorter
+- Shields allow exactly two buttons
+- `updateShield` writes the fallback shield keys the extensions read;
+  `updateShieldWithId` only applies when an action names that id, and blocking
+  from JS cannot pass one
+- `targets/` is re-copied from `node_modules` on every prebuild, so edits there
+  are lost unless the plugin gets `copyToTargetFolder: false`
+- Family Controls **(Development)** is self-serve; **(Distribution)** is
+  requested per bundle ID and reviewed by Apple, then enabled under
+  *Additional Capabilities*
+- Max 20 simultaneous DeviceActivity monitors (this app uses one, briefly)
