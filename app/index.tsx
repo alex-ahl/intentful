@@ -1,15 +1,21 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { View, Text, StyleSheet, Switch, Pressable, Alert } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useFocusEffect } from "expo-router";
 import { DeviceActivitySelectionViewPersisted } from "react-native-device-activity";
-import { requestScreenTimeAuth, getAuthStatus } from "@/lib/device-activity";
+import {
+  requestScreenTimeAuth,
+  getAuthStatus,
+  onAuthStatusChange,
+} from "@/lib/device-activity";
 import {
   arm,
   disarm,
   isArmed,
   isShielded,
-  countSelected,
+  readSelection,
+  describeSelection,
+  Selection,
 } from "@/lib/monitoring";
 import { SELECTION_ID, REARM_MINUTES } from "@/lib/constants";
 
@@ -17,13 +23,22 @@ export default function HomeScreen() {
   const [approved, setApproved] = useState(() => getAuthStatus() === "approved");
   const [armed, setArmed] = useState(() => isArmed());
   const [shielded, setShielded] = useState(() => isShielded());
-  const [selected, setSelected] = useState(() => countSelected());
+  const [selected, setSelected] = useState<Selection>(() => readSelection());
+
+  useEffect(() => {
+    const sub = onAuthStatusChange((status) =>
+      setApproved(status === "approved"),
+    );
+
+    return () => sub.remove();
+  }, []);
 
   useFocusEffect(
     useCallback(() => {
+      setApproved(getAuthStatus() === "approved");
       setArmed(isArmed());
       setShielded(isShielded());
-      setSelected(countSelected());
+      setSelected(readSelection());
     }, []),
   );
 
@@ -39,6 +54,28 @@ export default function HomeScreen() {
     }
   }
 
+  // The shield holds whichever apps were current when it was applied, so a
+  // changed selection only takes effect once re-applied. Emptying the selection
+  // leaves nothing to protect, so it turns the feature off instead.
+  function reapply(next: Selection) {
+    if (!isArmed()) {
+      return;
+    }
+
+    try {
+      if (next.apps + next.categories === 0) {
+        disarm();
+      } else {
+        arm();
+      }
+    } catch (e: any) {
+      Alert.alert("Couldn't update", e?.message ?? String(e));
+    }
+
+    setArmed(isArmed());
+    setShielded(isShielded());
+  }
+
   function toggle(value: boolean) {
     try {
       if (value) {
@@ -50,7 +87,7 @@ export default function HomeScreen() {
       // that the system actually applied it.
       setArmed(isArmed());
       setShielded(isShielded());
-      setSelected(countSelected());
+      setSelected(readSelection());
     } catch (e: any) {
       Alert.alert("Couldn't turn that on", e?.message ?? String(e));
     }
@@ -79,6 +116,15 @@ export default function HomeScreen() {
           familyActivitySelectionId={SELECTION_ID}
           headerText="Which apps should ask?"
           footerText="Change these any time."
+          onSelectionChange={(event) => {
+            const next = {
+              apps: event.nativeEvent.applicationCount,
+              categories: event.nativeEvent.categoryCount,
+            };
+
+            setSelected(next);
+            reapply(next);
+          }}
           style={styles.pickerView}
         />
       </View>
@@ -101,15 +147,19 @@ export default function HomeScreen() {
   );
 }
 
-function status(armed: boolean, shielded: boolean, selected: number): string {
+function status(
+  armed: boolean,
+  shielded: boolean,
+  selected: Selection,
+): string {
+  const what = describeSelection(selected);
+
   if (!armed) {
-    return selected > 0
-      ? `Off — ${selected} selected`
-      : "Off — nothing selected";
+    return what ? `Off — ${what} selected` : "Off — nothing selected";
   }
 
   if (shielded) {
-    return `On — ${selected} shielded, icons look dimmed`;
+    return `On — ${what} shielded, icons look dimmed`;
   }
 
   return `On — open for up to ${REARM_MINUTES} min, then it asks again`;

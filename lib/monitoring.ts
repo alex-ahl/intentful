@@ -1,6 +1,6 @@
 import {
   blockSelection,
-  unblockSelection,
+  resetBlocks,
   stopMonitoring,
   configureActions,
   getFamilyActivitySelectionId,
@@ -17,6 +17,9 @@ export function arm(): void {
     throw new Error("Pick at least one app first.");
   }
 
+  // Clear first so the blocklist ends up matching the selection exactly —
+  // blockSelection unions, so stale apps would otherwise stay shielded.
+  resetBlocks();
   configureShield();
 
   configureActions({
@@ -33,7 +36,7 @@ export function arm(): void {
 
 export function disarm(): void {
   stopMonitoring();
-  unblockSelection({ activitySelectionId: SELECTION_ID });
+  resetBlocks();
   userDefaultsSet(ARMED_KEY, false);
 }
 
@@ -47,14 +50,33 @@ export function isShielded(): boolean {
   return isShieldActive();
 }
 
-export function countSelected(): number {
+export type Selection = { apps: number; categories: number };
+
+export function readSelection(): Selection {
   const token = getFamilyActivitySelectionId(SELECTION_ID);
 
   if (!token) {
-    return 0;
+    return { apps: 0, categories: 0 };
   }
 
   const meta = activitySelectionMetadata({ activitySelectionToken: token });
 
-  return (meta?.applicationCount ?? 0) + (meta?.categoryCount ?? 0);
+  return {
+    apps: meta?.applicationCount ?? 0,
+    categories: meta?.categoryCount ?? 0,
+  };
+}
+
+export function describeSelection({ apps, categories }: Selection): string {
+  const parts = [];
+
+  if (apps > 0) {
+    parts.push(`${apps} app${apps === 1 ? "" : "s"}`);
+  }
+
+  if (categories > 0) {
+    parts.push(`${categories} categor${categories === 1 ? "y" : "ies"}`);
+  }
+
+  return parts.join(", ");
 }
