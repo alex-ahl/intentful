@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { View, Text, StyleSheet, Switch, Pressable, Alert } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useFocusEffect } from "expo-router";
@@ -16,6 +16,7 @@ import {
   readSelection,
   describeSelection,
   refreshShieldIcon,
+  selectionToken,
   Selection,
 } from "@/lib/monitoring";
 import { SELECTION_ID, REARM_MINUTES } from "@/lib/constants";
@@ -26,6 +27,10 @@ export default function HomeScreen() {
   const [armed, setArmed] = useState(() => isArmed());
   const [shielded, setShielded] = useState(() => isShielded());
   const [selected, setSelected] = useState<Selection>(() => readSelection());
+  // The picker echoes the stored selection once on mount. Acting on that echo
+  // would re-apply the shield and cut short a grace window already running.
+  const appliedSelection = useRef(selectionToken());
+  const sawEcho = useRef(false);
 
   useEffect(() => {
     void refreshShieldIcon();
@@ -45,6 +50,7 @@ export default function HomeScreen() {
       setArmed(isArmed());
       setShielded(isShielded());
       setSelected(readSelection());
+      appliedSelection.current = selectionToken();
     }, []),
   );
 
@@ -120,6 +126,9 @@ export default function HomeScreen() {
       <View style={styles.picker}>
         <DeviceActivitySelectionViewPersisted
           familyActivitySelectionId={SELECTION_ID}
+          // Without this the picker never loads the stored selection, starts
+          // empty, and its first event deletes what was stored.
+          includeEntireCategory={false}
           headerText="Which apps should ask?"
           footerText="Change these any time."
           onSelectionChange={(event) => {
@@ -129,7 +138,19 @@ export default function HomeScreen() {
             };
 
             setSelected(next);
-            reapply(next);
+
+            const token = selectionToken();
+
+            if (!sawEcho.current) {
+              sawEcho.current = true;
+              appliedSelection.current = token;
+              return;
+            }
+
+            if (token !== appliedSelection.current) {
+              appliedSelection.current = token;
+              reapply(next);
+            }
           }}
           style={styles.pickerView}
         />

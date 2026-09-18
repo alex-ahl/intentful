@@ -76,6 +76,12 @@ targets/              vendored — overwritten from node_modules on every prebui
   requested per bundle ID and reviewed by Apple, then enabled under
   *Additional Capabilities*
 - Max 20 simultaneous DeviceActivity monitors (this app uses one, briefly)
+- `DeviceActivitySelectionViewPersisted` only loads the stored selection when
+  `includeEntireCategory` is passed — without it the picker starts empty, and
+  its first event **deletes** the stored selection rather than reporting it
+- The picker fires `onSelectionChange` once on mount, echoing the stored
+  selection with no user involvement — acting on that echo would re-apply the
+  shield and cut short a grace window already running
 - `isShieldActive()` is false during the grace window after a "Yes", so it
   cannot answer "is the feature on" — that intent lives in App Group defaults
 
