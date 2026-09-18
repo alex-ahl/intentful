@@ -15,15 +15,21 @@ import {
   isShielded,
   readSelection,
   describeSelection,
+  refreshShieldIcon,
   Selection,
 } from "@/lib/monitoring";
 import { SELECTION_ID, REARM_MINUTES } from "@/lib/constants";
+import { colors } from "@/lib/colors";
 
 export default function HomeScreen() {
   const [approved, setApproved] = useState(() => getAuthStatus() === "approved");
   const [armed, setArmed] = useState(() => isArmed());
   const [shielded, setShielded] = useState(() => isShielded());
   const [selected, setSelected] = useState<Selection>(() => readSelection());
+
+  useEffect(() => {
+    void refreshShieldIcon();
+  }, []);
 
   useEffect(() => {
     const sub = onAuthStatusChange((status) =>
@@ -139,8 +145,8 @@ export default function HomeScreen() {
         <Switch
           value={armed}
           onValueChange={toggle}
-          trackColor={{ true: "#818cf8", false: "#3f3f5e" }}
-          thumbColor="#fff"
+          trackColor={{ true: colors.teal, false: colors.surfaceRaised }}
+          thumbColor={colors.sand}
         />
       </View>
     </SafeAreaView>
@@ -162,20 +168,20 @@ function status(
     return `On — ${what} shielded, icons look dimmed`;
   }
 
-  return `On — open for up to ${REARM_MINUTES} min, then it asks again`;
+  return `On — nothing asks for up to ${REARM_MINUTES} min`;
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#0f0f23", padding: 20 },
+  container: { flex: 1, backgroundColor: colors.ground, padding: 20 },
   centered: { justifyContent: "center", alignItems: "center" },
   title: {
-    color: "#fff",
+    color: colors.sand,
     fontSize: 28,
     fontWeight: "700",
     marginBottom: 16,
   },
   body: {
-    color: "#9ca3af",
+    color: colors.textMuted,
     fontSize: 16,
     textAlign: "center",
     lineHeight: 24,
@@ -184,20 +190,20 @@ const styles = StyleSheet.create({
   picker: { flex: 1, borderRadius: 12, overflow: "hidden", marginBottom: 16 },
   pickerView: { flex: 1 },
   row: {
-    backgroundColor: "#1a1a2e",
+    backgroundColor: colors.surface,
     padding: 16,
     borderRadius: 12,
     flexDirection: "row",
     alignItems: "center",
   },
-  rowTitle: { color: "#e5e7eb", fontSize: 16, fontWeight: "600" },
-  rowSubtitle: { color: "#6b7280", fontSize: 13, marginTop: 2 },
-  rowSubtitleOn: { color: "#34d399" },
+  rowTitle: { color: colors.text, fontSize: 16, fontWeight: "600" },
+  rowSubtitle: { color: colors.textMuted, fontSize: 13, marginTop: 2 },
+  rowSubtitleOn: { color: colors.teal },
   button: {
-    backgroundColor: "#818cf8",
+    backgroundColor: colors.sand,
     paddingVertical: 16,
     paddingHorizontal: 32,
     borderRadius: 12,
   },
-  buttonText: { color: "#fff", fontSize: 17, fontWeight: "600" },
+  buttonText: { color: colors.ground, fontSize: 17, fontWeight: "600" },
 });

@@ -49,6 +49,7 @@ which re-applies `blockSelection`.
 ```
 app/_layout.tsx       Stack only
 app/index.tsx         the whole UI: picker + toggle
+lib/colors.ts         palette sampled from the app icon
 lib/constants.ts      selection id, re-arm window, armed-state key
 lib/device-activity.ts  authorization wrapper
 lib/monitoring.ts     arm() / disarm() / state readers
@@ -63,6 +64,9 @@ targets/              vendored — overwritten from node_modules on every prebui
 - **15 minutes is Apple's minimum DeviceActivity schedule** — the re-arm window
   cannot be shorter
 - Shields allow exactly two buttons
+- A custom shield icon must be copied into the App Group container first —
+  the extension reads the file, it cannot see bundled assets. Naming a path
+  that fails to load leaves the shield with no icon at all, not the SF Symbol
 - `updateShield` writes the fallback shield keys the extensions read;
   `updateShieldWithId` only applies when an action names that id, and blocking
   from JS cannot pass one

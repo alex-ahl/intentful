@@ -10,7 +10,17 @@ import {
   userDefaultsSet,
 } from "react-native-device-activity";
 import { SELECTION_ID, REARM_ACTIVITY_NAME, ARMED_KEY } from "./constants";
-import { configureShield } from "./shield-config";
+import { configureShield, installShieldIcon } from "./shield-config";
+
+// The icon lands in the App Group asynchronously, so a shield configured
+// before it arrives has to be rewritten once it has.
+export async function refreshShieldIcon(): Promise<void> {
+  await installShieldIcon();
+
+  if (isArmed()) {
+    configureShield();
+  }
+}
 
 export function arm(): void {
   if (!getFamilyActivitySelectionId(SELECTION_ID)) {

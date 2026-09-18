@@ -1,5 +1,6 @@
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
+import { colors } from "@/lib/colors";
 
 export { ErrorBoundary } from "expo-router";
 
@@ -10,7 +11,7 @@ export default function RootLayout() {
       <Stack
         screenOptions={{
           headerShown: false,
-          contentStyle: { backgroundColor: "#0f0f23" },
+          contentStyle: { backgroundColor: colors.ground },
         }}
       />
     </>
