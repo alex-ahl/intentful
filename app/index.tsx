@@ -27,8 +27,7 @@ export default function HomeScreen() {
   const [armed, setArmed] = useState(() => isArmed());
   const [shielded, setShielded] = useState(() => isShielded());
   const [selected, setSelected] = useState<Selection>(() => readSelection());
-  // The picker echoes the stored selection once on mount. Acting on that echo
-  // would re-apply the shield and cut short a grace window already running.
+  // The picker's mount echo must not be mistaken for a user change.
   const appliedSelection = useRef(selectionToken());
   const sawEcho = useRef(false);
 

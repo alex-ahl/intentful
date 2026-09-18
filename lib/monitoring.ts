@@ -60,8 +60,6 @@ export function isShielded(): boolean {
   return isShieldActive();
 }
 
-// Identity of the current selection, not just its size — two different apps
-// produce different tokens where the counts alone would match.
 export function selectionToken(): string | undefined {
   return getFamilyActivitySelectionId(SELECTION_ID);
 }
