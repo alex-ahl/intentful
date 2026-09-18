@@ -3,7 +3,13 @@ import { ExpoConfig, ConfigContext } from "expo/config";
 // Overridable so anyone can build this with their own Apple account.
 const BUNDLE_ID = process.env.BUNDLE_ID ?? "app.intentful.ios";
 const APP_GROUP = process.env.APP_GROUP ?? "group.intentful.shared";
-const APPLE_TEAM_ID = process.env.APPLE_TEAM_ID ?? "APPLE_TEAM_ID";
+const APPLE_TEAM_ID = process.env.APPLE_TEAM_ID;
+
+if (!APPLE_TEAM_ID) {
+  throw new Error(
+    "APPLE_TEAM_ID is not set. Use your own Apple Developer team id — see the README.",
+  );
+}
 
 export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,

@@ -3,8 +3,8 @@
 An iOS app that does one thing: when you open an app you've chosen, it asks
 **"Are you sure you really want to open this app?"**
 
-Tap **Yes** and the app opens for 15 minutes. Tap **No** and it closes. That's
-the whole product — no timers, no streaks, no scores, no analytics, no account.
+Tap **Open anyway** and it opens. Tap **Not now** and it closes. That's the
+whole product — no timers, no streaks, no scores, no analytics, no account.
 
 MIT licensed. Everything stays on your device; nothing is collected or sent
 anywhere.
@@ -16,9 +16,13 @@ on an app being opened. So Intentful doesn't use thresholds at all — it applie
 a shield to your selected apps and leaves it there. A permanently shielded app
 shows the shield every time you open it, which is exactly the prompt we want.
 
-Tapping **Yes** lifts the shield and schedules a one-off 15-minute
+Tapping **Open anyway** lifts the shield and schedules a one-off 15-minute
 `DeviceActivity` interval. When that interval ends, the monitor extension puts
 the shield back.
+
+Two things about that window are worth knowing, because they surprise people:
+it lifts the shield on **every** app you've chosen, not just the one you
+opened, and it runs on the clock whether you use anything or not.
 
 Fifteen minutes is Apple's minimum schedule length, not a design choice.
 
@@ -36,6 +40,11 @@ npm install
 APPLE_TEAM_ID=YOURTEAM BUNDLE_ID=com.you.intentful APP_GROUP=group.you.intentful \
   npm run build
 ```
+
+`APPLE_TEAM_ID` is required and has no default — the build fails with a clear
+message without it. `BUNDLE_ID` and `APP_GROUP` fall back to this project's own
+identifiers, which are registered to someone else's team, so set your own.
+Putting them in `.env.local` works too; that file is gitignored.
 
 `npm run build` prebuilds the iOS project, compiles with `xcodebuild`, and
 installs onto the connected device. `npm run dev` starts the dev server on the
@@ -69,6 +78,7 @@ app/
   _layout.tsx        Stack, nothing else
   index.tsx          the only screen: app picker + on/off
 lib/
+  colors.ts          palette, sampled from the app icon
   constants.ts       selection id, re-arm window
   device-activity.ts Screen Time authorization
   monitoring.ts      arm() / disarm()
