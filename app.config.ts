@@ -29,11 +29,8 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   ios: {
     supportsTablet: false,
     bundleIdentifier: BUNDLE_ID,
+    buildNumber: "1",
     appleTeamId: APPLE_TEAM_ID,
-    infoPlist: {
-      NSFaceIDUsageDescription:
-        "Used to verify identity when changing settings",
-    },
   },
   plugins: [
     "expo-router",
