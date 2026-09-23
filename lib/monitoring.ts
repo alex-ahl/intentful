@@ -3,6 +3,7 @@ import {
   resetBlocks,
   stopMonitoring,
   configureActions,
+  cleanUpAfterActivity,
   getFamilyActivitySelectionId,
   isShieldActive,
   activitySelectionMetadata,
@@ -45,6 +46,7 @@ export function arm(): void {
 }
 
 export function disarm(): void {
+  cleanUpAfterActivity(REARM_ACTIVITY_NAME);
   stopMonitoring();
   resetBlocks();
   userDefaultsSet(ARMED_KEY, false);
