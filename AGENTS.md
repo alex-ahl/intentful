@@ -81,8 +81,8 @@ targets/              vendored — overwritten from node_modules on every prebui
 - `targets/` is re-copied from `node_modules` on every prebuild, so edits there
   are lost unless the plugin gets `copyToTargetFolder: false`
 - Family Controls **(Development)** is self-serve; **(Distribution)** is
-  requested per bundle ID and reviewed by Apple, then enabled under
-  *Additional Capabilities*
+  requested once per account and reviewed by Apple, then enabled per identifier
+  under *Additional Capabilities*
 - Max 20 simultaneous DeviceActivity monitors (this app uses one, briefly)
 - `DeviceActivitySelectionViewPersisted` only loads the stored selection when
   `includeEntireCategory` is passed — without it the picker starts empty, and

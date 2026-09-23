@@ -79,8 +79,10 @@ The **Family Controls (Development)** capability is self-serve — tick it and i
 works. Shipping to TestFlight or the App Store additionally requires the
 **Family Controls (Distribution)** entitlement, which is
 [requested from Apple](https://developer.apple.com/contact/request/family-controls-distribution)
-per bundle ID and reviewed manually. Once granted you must enable it under
-*Additional Capabilities* on each identifier — it is not the same checkbox.
+and reviewed manually. The request is a short form and the grant is assigned to
+your whole account, not to one bundle ID — but you then have to enable it under
+*Additional Capabilities* on each of the four identifiers, which is not the same
+checkbox as the development one.
 
 ## Layout
 
