@@ -9,6 +9,12 @@ whole product — no timers, no streaks, no scores, no analytics, no account.
 MIT licensed. Everything stays on your device; nothing is collected or sent
 anywhere.
 
+<p align="center">
+  <img src="docs/screenshots/onboarding.png" width="30%" alt="First run, asking for Screen Time access">
+  <img src="docs/screenshots/choose-apps.png" width="30%" alt="Choosing which apps to shield, with the toggle on">
+  <img src="docs/screenshots/shield.png" width="30%" alt="The shield asking Are you sure?">
+</p>
+
 ## How it works
 
 Apple's Screen Time APIs can only trigger on *cumulative minutes of use*, never
