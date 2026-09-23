@@ -28,8 +28,6 @@ a one-off 15-minute `DeviceActivity` interval. When that interval ends, the
 monitor extension drops the exemption and the app asks again.
 
 The shield closes the app rather than revealing it, so you reopen it yourself.
-That is deliberate: a shield can either dismiss or stay, and staying makes iOS
-redraw it — briefly showing its own generic "restricted" screen instead of ours.
 
 One thing about that window is worth knowing, because it surprises people: it
 runs on the clock whether you use the app or not. Your other chosen apps are
