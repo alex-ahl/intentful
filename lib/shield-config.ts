@@ -4,7 +4,7 @@ import {
   getAppGroupFileDirectory,
 } from "react-native-device-activity";
 import { Asset } from "expo-asset";
-import { SELECTION_ID, REARM_ACTIVITY_NAME, REARM_MINUTES } from "./constants";
+import { REARM_ACTIVITY_NAME, REARM_MINUTES } from "./constants";
 import { colors, rgb } from "./colors";
 
 const ICON_FILE = "shield-icon.png";
@@ -44,13 +44,13 @@ export function configureShield(): void {
       backgroundColor: rgb(colors.ground),
       title: "Are you sure?",
       titleColor: rgb(colors.sand),
-      subtitle: `None of your chosen apps will ask for the next ${REARM_MINUTES} minutes, used or not.`,
+      subtitle: "The app will close. Open it again to come in.",
       subtitleColor: rgb(colors.textMuted),
       // Tinting would flatten the mark's own two colours.
       ...(iconInstalled
         ? { iconAppGroupRelativePath: ICON_FILE }
         : { iconSystemName: "questionmark.circle", iconTint: rgb(colors.sand) }),
-      primaryButtonLabel: "Open anyway",
+      primaryButtonLabel: `Unlock for ${REARM_MINUTES} min`,
       primaryButtonBackgroundColor: rgb(colors.sand),
       primaryButtonLabelColor: rgb(colors.ground),
       secondaryButtonLabel: "Not now",
@@ -58,11 +58,9 @@ export function configureShield(): void {
     },
     {
       primary: {
-        // "defer" is not "do nothing" — it holds the shield while the actions
-        // run, and lifting the block is what reveals the app.
-        behavior: "defer",
+        behavior: "close",
+        type: "addCurrentToWhitelist",
         actions: [
-          { type: "unblockSelection", familyActivitySelectionId: SELECTION_ID },
           {
             type: "startMonitoring",
             activityName: REARM_ACTIVITY_NAME,

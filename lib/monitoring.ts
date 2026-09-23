@@ -1,6 +1,7 @@
 import {
   blockSelection,
   resetBlocks,
+  clearWhitelist,
   stopMonitoring,
   configureActions,
   cleanUpAfterActivity,
@@ -31,6 +32,7 @@ export function arm(): void {
   // Clear first so the blocklist ends up matching the selection exactly —
   // blockSelection unions, so stale apps would otherwise stay shielded.
   resetBlocks();
+  clearWhitelist();
   configureShield();
 
   configureActions({
@@ -38,6 +40,7 @@ export function arm(): void {
     callbackName: "intervalDidEnd",
     actions: [
       { type: "blockSelection", familyActivitySelectionId: SELECTION_ID },
+      { type: "clearWhitelistAndUpdateBlock" },
     ],
   });
 
@@ -49,6 +52,7 @@ export function disarm(): void {
   cleanUpAfterActivity(REARM_ACTIVITY_NAME);
   stopMonitoring();
   resetBlocks();
+  clearWhitelist();
   userDefaultsSet(ARMED_KEY, false);
 }
 

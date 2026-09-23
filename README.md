@@ -3,8 +3,9 @@
 An iOS app that does one thing: when you open an app you've chosen, it asks
 **"Are you sure you really want to open this app?"**
 
-Tap **Open anyway** and it opens. Tap **Not now** and it closes. That's the
-whole product — no timers, no streaks, no scores, no analytics, no account.
+Tap **Unlock for 15 min** and the app closes; open it again and you're in, no
+question asked, for fifteen minutes. Tap **Not now** and it just closes. That's
+the whole product — no timers, no streaks, no scores, no analytics, no account.
 
 MIT licensed. Everything stays on your device; nothing is collected or sent
 anywhere.
@@ -22,13 +23,17 @@ on an app being opened. So Intentful doesn't use thresholds at all — it applie
 a shield to your selected apps and leaves it there. A permanently shielded app
 shows the shield every time you open it, which is exactly the prompt we want.
 
-Tapping **Open anyway** lifts the shield and schedules a one-off 15-minute
-`DeviceActivity` interval. When that interval ends, the monitor extension puts
-the shield back.
+Tapping **Unlock for 15 min** exempts that one app from the shield and schedules
+a one-off 15-minute `DeviceActivity` interval. When that interval ends, the
+monitor extension drops the exemption and the app asks again.
 
-Two things about that window are worth knowing, because they surprise people:
-it lifts the shield on **every** app you've chosen, not just the one you
-opened, and it runs on the clock whether you use anything or not.
+The shield closes the app rather than revealing it, so you reopen it yourself.
+That is deliberate: a shield can either dismiss or stay, and staying makes iOS
+redraw it — briefly showing its own generic "restricted" screen instead of ours.
+
+One thing about that window is worth knowing, because it surprises people: it
+runs on the clock whether you use the app or not. Your other chosen apps are
+unaffected and keep asking.
 
 Fifteen minutes is Apple's minimum schedule length, not a design choice.
 

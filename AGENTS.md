@@ -1,8 +1,9 @@
 # Intentful
 
 iOS app with exactly one behaviour: opening a selected app shows a shield asking
-"Are you sure you really want to open this app?". Yes → 15 minutes of access.
-No → the app closes. MIT, open source, on-device only.
+"Are you sure you really want to open this app?". Yes → the app closes and
+reopening it gives 15 minutes of unquestioned access to that app. No → the app
+just closes. MIT, open source, on-device only.
 
 Deliberately minimal. Resist adding features — the previous version of this app
 had adaptive thresholds, a reflection flow, pattern detection and notifications,
@@ -39,10 +40,17 @@ DeviceActivity can only fire on cumulative minutes, never on an app being
 opened. So there is no threshold: `arm()` applies `blockSelection` and leaves it
 applied, and a permanently shielded app shows its shield on every open.
 
-The shield's **Yes** button runs two actions: `unblockSelection`, then
-`startMonitoring` for a one-off interval named `rearm`. When that interval ends,
-the monitor extension runs the `intervalDidEnd` action registered by `arm()`,
-which re-applies `blockSelection`.
+The shield's **Yes** button adds the tapped app to the whitelist
+(`addCurrentToWhitelist`) and starts a one-off interval named `rearm`. The
+whitelist is subtracted from the blocklist, so only that app is exempt. When the
+interval ends, the monitor extension runs the `intervalDidEnd` actions
+registered by `arm()`, which re-assert the block and clear the whitelist.
+
+Both buttons use `behavior: "close"`. `"defer"` keeps the shield on screen and
+makes SpringBoard redraw it, and the redraw fetches the shield configuration for
+an app that is no longer shielded — which fails, so it falls back to the system's
+own appearance for a frame. Closing gives up revealing the app automatically and
+costs the user a tap, which is the trade for never showing that frame.
 
 ## Key files
 
@@ -82,6 +90,8 @@ targets/              vendored — overwritten from node_modules on every prebui
 - The picker fires `onSelectionChange` once on mount, echoing the stored
   selection with no user involvement — acting on that echo would re-apply the
   shield and cut short a grace window already running
-- `isShieldActive()` is false during the grace window after a "Yes", so it
-  cannot answer "is the feature on" — that intent lives in App Group defaults
+- `isShieldActive()` reads the blocklist minus the whitelist, so it answers
+  "is anything shielded right now", not "is the feature on" — with one app
+  chosen it goes false during that app's grace window. That intent lives in
+  App Group defaults
 
