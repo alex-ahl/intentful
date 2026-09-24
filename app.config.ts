@@ -29,7 +29,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   ios: {
     supportsTablet: false,
     bundleIdentifier: BUNDLE_ID,
-    buildNumber: "1",
+    buildNumber: "2",
     appleTeamId: APPLE_TEAM_ID,
   },
   plugins: [
