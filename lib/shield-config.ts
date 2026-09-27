@@ -44,7 +44,7 @@ export function configureShield(): void {
       backgroundColor: rgb(colors.ground),
       title: "Are you sure?",
       titleColor: rgb(colors.sand),
-      subtitle: "The app will close. Open it again to come in.",
+      subtitle: "The app will close. Open it again to continue.",
       subtitleColor: rgb(colors.textMuted),
       // Tinting would flatten the mark's own two colours.
       ...(iconInstalled
