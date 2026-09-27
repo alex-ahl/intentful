@@ -15,7 +15,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
   name: "Intentful",
   slug: "intentful",
-  version: "1.0.0",
+  version: "1.0.1",
   orientation: "portrait",
   icon: "./assets/images/icon.png",
   scheme: "intentful",
@@ -29,7 +29,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   ios: {
     supportsTablet: false,
     bundleIdentifier: BUNDLE_ID,
-    buildNumber: "2",
+    buildNumber: "3",
     appleTeamId: APPLE_TEAM_ID,
   },
   plugins: [
