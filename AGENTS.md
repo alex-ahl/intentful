@@ -1,9 +1,10 @@
 # Intentful
 
 iOS app with exactly one behaviour: opening a selected app shows a shield asking
-"Are you sure you really want to open this app?". Yes → the app closes and
-reopening it gives 15 minutes of unquestioned access to that app. No → the app
-just closes. MIT, open source, on-device only.
+"Are you sure you really want to open this app?". Yes → the app closes and a
+60-second wait starts; Yes after the wait → the app closes and reopening it
+gives 15 minutes of unquestioned access to that app. No → the app just closes.
+MIT, open source, on-device only.
 
 Deliberately minimal. Resist adding features — the previous version of this app
 had adaptive thresholds, a reflection flow, pattern detection and notifications,
@@ -40,7 +41,16 @@ DeviceActivity can only fire on cumulative minutes, never on an app being
 opened. So there is no threshold: `arm()` applies `blockSelection` and leaves it
 applied, and a permanently shielded app shows its shield on every open.
 
-The shield's **Yes** button adds the tapped app to the whitelist
+The first **Yes** only writes `{ token, tappedAt }` to `pendingUnlock` in App
+Group defaults and closes. `targets/*/UnlockWait.swift` turns that entry into
+fresh / waiting / ready: the configuration extension swaps in the `waiting*` or
+`ready*` copy from the shield config, and the action extension ignores Yes until
+ready. The other button clears the entry while waiting or ready, reading
+**Cancel wait** while waiting. Ready lasts `UNLOCK_EXPIRY_MINUTES`, then the
+wait starts over. Timings come from the `unlockWait` key written by
+`configureShield()`; without it Yes unlocks immediately.
+
+Once ready, **Yes** adds the tapped app to the whitelist
 (`addCurrentToWhitelist`) and starts a one-off interval named `rearm`. The
 whitelist is subtracted from the blocklist, so only that app is exempt. When the
 interval ends, the monitor extension runs the `intervalDidEnd` actions
@@ -58,12 +68,12 @@ costs the user a tap, which is the trade for never showing that frame.
 app/_layout.tsx       Stack only
 app/index.tsx         the whole UI: picker + toggle
 lib/colors.ts         palette sampled from the app icon
-lib/constants.ts      selection id, re-arm window, armed-state key
+lib/constants.ts      selection id, re-arm window, unlock wait, defaults keys
 lib/device-activity.ts  authorization wrapper
 lib/monitoring.ts     arm() / disarm() / state readers
 lib/shield-config.ts  shield copy and the Yes/No actions
 plugins/withAutoSigning.js  CODE_SIGN_STYLE=Automatic on all targets
-targets/              vendored — overwritten from node_modules on every prebuild
+targets/              forked extensions; UnlockWait.swift is identical in the two shield targets
 ```
 
 ## Constraints worth knowing
@@ -78,8 +88,11 @@ targets/              vendored — overwritten from node_modules on every prebui
 - `updateShield` writes the fallback shield keys the extensions read;
   `updateShieldWithId` only applies when an action names that id, and blocking
   from JS cannot pass one
-- `targets/` is re-copied from `node_modules` on every prebuild, so edits there
-  are lost unless the plugin gets `copyToTargetFolder: false`
+- `targets/` is not refreshed from `node_modules` (`copyToTargetFolder: false`),
+  so upgrading react-native-device-activity means merging its `targets/` and
+  `ios/Shared.swift` by hand
+- The shield configuration extension runs on every open, so shield copy can
+  depend on the current time
 - Family Controls **(Development)** is self-serve; **(Distribution)** is
   requested once per account and reviewed by Apple, then enabled per identifier
   under *Additional Capabilities*

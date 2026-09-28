@@ -3,9 +3,11 @@
 An iOS app that does one thing: when you open an app you've chosen, it asks
 **"Are you sure you really want to open this app?"**
 
-Tap **Unlock for 15 min** and the app closes; open it again and you're in, no
-question asked, for fifteen minutes. Tap **Not now** and it just closes. That's
-the whole product — no timers, no streaks, no scores, no analytics, no account.
+Tap **Start 1-min wait** and the app closes. Open it again after a minute and
+tap **Unlock for 15 min**; the app closes once more, and the next time you open
+it you're in, no question asked, for fifteen minutes. Tap **Not now** and it
+just closes. That's the whole product — no streaks, no scores, no analytics, no
+account.
 
 MIT licensed. Everything stays on your device; nothing is collected or sent
 anywhere.
@@ -13,7 +15,12 @@ anywhere.
 <p align="center">
   <img src="docs/screenshots/onboarding.png" width="30%" alt="First run, asking for Screen Time access">
   <img src="docs/screenshots/choose-apps.png" width="30%" alt="Choosing which apps to shield, with the toggle on">
-  <img src="docs/screenshots/shield.png" width="30%" alt="The shield asking Are you sure?">
+</p>
+
+<p align="center">
+  <img src="docs/screenshots/shield.png" width="30%" alt="The shield asking Are you sure?, offering a one-minute wait">
+  <img src="docs/screenshots/shield-waiting.png" width="30%" alt="The shield during the wait, counting down the seconds left">
+  <img src="docs/screenshots/shield-ready.png" width="30%" alt="The shield after the wait, asking Still want to? and offering to unlock for 15 minutes">
 </p>
 
 ## How it works
@@ -22,6 +29,11 @@ Apple's Screen Time APIs can only trigger on *cumulative minutes of use*, never
 on an app being opened. So Intentful doesn't use thresholds at all — it applies
 a shield to your selected apps and leaves it there. A permanently shielded app
 shows the shield every time you open it, which is exactly the prompt we want.
+
+The first **Yes** records the time and closes the app. Reopened within the
+minute, the shield counts down and **Yes** does nothing. Once the minute is up
+the shield offers **Unlock for 15 min** for five minutes, after which the wait
+starts over. While waiting, **Not now** becomes **Cancel wait**.
 
 Tapping **Unlock for 15 min** exempts that one app from the shield and schedules
 a one-off 15-minute `DeviceActivity` interval. When that interval ends, the
@@ -96,7 +108,7 @@ lib/
   shield-config.ts   the "Are you sure?" shield and its two buttons
 plugins/
   withAutoSigning.js sets automatic signing on all four targets
-targets/             vendored extensions, overwritten from node_modules on prebuild
+targets/             the three extensions, forked from react-native-device-activity
 ```
 
 ## Credits

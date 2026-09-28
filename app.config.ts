@@ -48,6 +48,8 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       {
         appGroup: APP_GROUP,
         appleTeamId: APPLE_TEAM_ID,
+        // targets/ carries our own edits, which prebuild would otherwise overwrite.
+        copyToTargetFolder: false,
       },
     ],
   ],

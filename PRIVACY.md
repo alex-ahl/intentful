@@ -15,8 +15,11 @@ Everything stays on your iPhone:
   many.
 - **Whether the feature is on.** A single true/false value in the same
   container.
+- **Your last "Yes".** Which app's shield it was tapped on (the same opaque
+  token) and when, so the one-minute wait can be enforced. Cleared when the app
+  unlocks, the wait is cancelled, or the feature is turned off.
 
-Deleting the app deletes both.
+Deleting the app deletes all of it.
 
 ## Screen Time data
 

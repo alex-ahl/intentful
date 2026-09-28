@@ -67,8 +67,44 @@ func resolveIcon(dict: [String: Any]) -> UIImage? {
   return image
 }
 
-func buildShield(placeholders: [String: String?], config: [String: Any]?)
-  -> ShieldConfiguration {
+// The fresh state uses the base keys; the others override them where the config names one.
+func applyUnlockWait(_ config: [String: Any], _ unlockWait: UnlockWait) -> [String: Any] {
+  let prefix: String
+
+  switch unlockWait {
+  case .fresh:
+    return config
+  case .waiting:
+    prefix = "waiting"
+  case .ready:
+    prefix = "ready"
+  }
+
+  var result = config
+
+  for (key, override) in [
+    "title": "\(prefix)Title",
+    "subtitle": "\(prefix)Subtitle",
+    "primaryButtonLabel": "\(prefix)PrimaryButtonLabel",
+    "secondaryButtonLabel": "\(prefix)SecondaryButtonLabel",
+  ] {
+    if let value = config[override] {
+      result[key] = value
+    }
+  }
+
+  return result
+}
+
+func buildShield(
+  placeholders: [String: String?], config: [String: Any]?, unlockWait: UnlockWait = .fresh
+) -> ShieldConfiguration {
+  var placeholders = placeholders
+  let config = config.map { applyUnlockWait($0, unlockWait) }
+
+  if case .waiting(let remainingSeconds) = unlockWait {
+    placeholders["remainingSeconds"] = String(remainingSeconds)
+  }
 
   if let appGroup = appGroup {
     logger.log("Calling getShieldConfiguration with appgroup: \(appGroup, privacy: .public)")
@@ -143,7 +179,8 @@ class ShieldConfigurationExtension: ShieldConfigurationDataSource {
 
     return buildShield(
       placeholders: placeholders,
-      config: config
+      config: config,
+      unlockWait: unlockWaitKey(for: application.token).map { unlockWaitState(for: $0) } ?? .fresh
     )
   }
 
@@ -171,7 +208,8 @@ class ShieldConfigurationExtension: ShieldConfigurationDataSource {
 
     return buildShield(
       placeholders: placeholders,
-      config: config
+      config: config,
+      unlockWait: unlockWaitKey(for: category.token).map { unlockWaitState(for: $0) } ?? .fresh
     )
   }
 
@@ -195,7 +233,8 @@ class ShieldConfigurationExtension: ShieldConfigurationDataSource {
 
     return buildShield(
       placeholders: placeholders,
-      config: config
+      config: config,
+      unlockWait: unlockWaitKey(for: webDomain.token).map { unlockWaitState(for: $0) } ?? .fresh
     )
   }
 
@@ -223,7 +262,8 @@ class ShieldConfigurationExtension: ShieldConfigurationDataSource {
 
     return buildShield(
       placeholders: placeholders,
-      config: config
+      config: config,
+      unlockWait: unlockWaitKey(for: category.token).map { unlockWaitState(for: $0) } ?? .fresh
     )
   }
 }

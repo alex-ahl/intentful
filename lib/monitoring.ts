@@ -10,8 +10,14 @@ import {
   activitySelectionMetadata,
   userDefaultsGet,
   userDefaultsSet,
+  userDefaultsRemove,
 } from "react-native-device-activity";
-import { SELECTION_ID, REARM_ACTIVITY_NAME, ARMED_KEY } from "./constants";
+import {
+  SELECTION_ID,
+  REARM_ACTIVITY_NAME,
+  ARMED_KEY,
+  PENDING_UNLOCK_KEY,
+} from "./constants";
 import { configureShield, installShieldIcon } from "./shield-config";
 
 // The icon lands in the App Group asynchronously, so a shield configured
@@ -33,6 +39,7 @@ export function arm(): void {
   // blockSelection unions, so stale apps would otherwise stay shielded.
   resetBlocks();
   clearWhitelist();
+  userDefaultsRemove(PENDING_UNLOCK_KEY);
   configureShield();
 
   configureActions({
@@ -53,6 +60,7 @@ export function disarm(): void {
   stopMonitoring();
   resetBlocks();
   clearWhitelist();
+  userDefaultsRemove(PENDING_UNLOCK_KEY);
   userDefaultsSet(ARMED_KEY, false);
 }
 

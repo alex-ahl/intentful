@@ -222,6 +222,46 @@ func handleAction(
   }
 }
 
+// The first Yes starts the wait and a Yes during it does nothing; both just close, so the
+// configured actions (the unlock) only run once the wait is over. The other button cancels
+// the wait, but only this app's — the pending entry may belong to another app.
+func handleActionAfterUnlockWait(
+  action: ShieldAction,
+  key: String?,
+  completionHandler: @escaping (ShieldActionResponse) -> Void,
+  proceed: () -> Void
+) {
+  guard let key = key else {
+    proceed()
+    return
+  }
+
+  let state = unlockWaitState(for: key)
+
+  guard action == .primaryButtonPressed else {
+    switch state {
+    case .fresh:
+      break
+    case .waiting, .ready:
+      clearUnlockWait()
+    }
+
+    proceed()
+    return
+  }
+
+  switch state {
+  case .fresh:
+    startUnlockWait(for: key)
+    completionHandler(.close)
+  case .waiting:
+    completionHandler(.close)
+  case .ready:
+    clearUnlockWait()
+    proceed()
+  }
+}
+
 // Override the functions below to customize the shield actions used in various situations.
 // The system provides a default response for any functions that your subclass doesn't override.
 // Make sure that your class name matches the NSExtensionPrincipalClass in your Info.plist.
@@ -232,13 +272,19 @@ class ShieldActionExtension: ShieldActionDelegate {
   ) {
     logger.log("handle application")
 
-    handleAction(
+    handleActionAfterUnlockWait(
       action: action,
-      completionHandler: completionHandler,
-      applicationToken: application,
-      webdomainToken: nil,
-      categoryToken: nil
-    )
+      key: unlockWaitKey(for: application),
+      completionHandler: completionHandler
+    ) {
+      handleAction(
+        action: action,
+        completionHandler: completionHandler,
+        applicationToken: application,
+        webdomainToken: nil,
+        categoryToken: nil
+      )
+    }
   }
 
   override func handle(
@@ -247,13 +293,19 @@ class ShieldActionExtension: ShieldActionDelegate {
   ) {
     logger.log("handle domain")
 
-    handleAction(
+    handleActionAfterUnlockWait(
       action: action,
-      completionHandler: completionHandler,
-      applicationToken: nil,
-      webdomainToken: webDomain,
-      categoryToken: nil
-    )
+      key: unlockWaitKey(for: webDomain),
+      completionHandler: completionHandler
+    ) {
+      handleAction(
+        action: action,
+        completionHandler: completionHandler,
+        applicationToken: nil,
+        webdomainToken: webDomain,
+        categoryToken: nil
+      )
+    }
   }
 
   override func handle(
@@ -262,12 +314,18 @@ class ShieldActionExtension: ShieldActionDelegate {
   ) {
     logger.log("handle category")
 
-    handleAction(
+    handleActionAfterUnlockWait(
       action: action,
-      completionHandler: completionHandler,
-      applicationToken: nil,
-      webdomainToken: nil,
-      categoryToken: category
-    )
+      key: unlockWaitKey(for: category),
+      completionHandler: completionHandler
+    ) {
+      handleAction(
+        action: action,
+        completionHandler: completionHandler,
+        applicationToken: nil,
+        webdomainToken: nil,
+        categoryToken: category
+      )
+    }
   }
 }
