@@ -1,4 +1,15 @@
-# Intentful
+<p align="center">
+  <img src="assets/images/icon.png" width="120" alt="Intentful icon">
+</p>
+
+<h1 align="center">Intentful</h1>
+
+<p align="center">
+  <a href="https://apps.apple.com/app/id6761717073"><img src="https://img.shields.io/badge/App_Store-Download-0D96F6?logo=apple&logoColor=white" alt="Download on the App Store"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-green" alt="MIT licence"></a>
+  <img src="https://img.shields.io/badge/iOS-16%2B-lightgrey?logo=apple" alt="iOS 16+">
+  <img src="https://img.shields.io/badge/Expo-SDK_54-000020?logo=expo" alt="Expo SDK 54">
+</p>
 
 An iOS app that does one thing: when you open an app you've chosen, it asks
 **"Are you sure you really want to open this app?"**
