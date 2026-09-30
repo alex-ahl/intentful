@@ -1,38 +1,54 @@
 <p align="center">
-  <img src="assets/images/icon.png" width="120" alt="Intentful icon">
+  <a href="#"><img src="docs/assets/icon-rounded.png" alt="Intentful" width="112" height="112"></a>
 </p>
 
 <h1 align="center">Intentful</h1>
 
 <p align="center">
-  <a href="https://apps.apple.com/app/id6761717073"><img src="https://img.shields.io/badge/App_Store-Download-0D96F6?logo=apple&logoColor=white" alt="Download on the App Store"></a>
-  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-green" alt="MIT licence"></a>
-  <img src="https://img.shields.io/badge/iOS-16%2B-lightgrey?logo=apple" alt="iOS 16+">
-  <img src="https://img.shields.io/badge/Expo-SDK_54-000020?logo=expo" alt="Expo SDK 54">
-</p>
-
-An iOS app that does one thing: when you open an app you've chosen, it asks
-**"Are you sure you really want to open this app?"**
-
-Tap **Start 1-min wait** and the app closes. Open it again after a minute and
-tap **Unlock for 15 min**; the app closes once more, and the next time you open
-it you're in, no question asked, for fifteen minutes. Tap **Not now** and it
-just closes. That's the whole product — no streaks, no scores, no analytics, no
-account.
-
-MIT licensed. Everything stays on your device; nothing is collected or sent
-anywhere.
-
-<p align="center">
-  <img src="docs/screenshots/onboarding.png" width="30%" alt="First run, asking for Screen Time access">
-  <img src="docs/screenshots/choose-apps.png" width="30%" alt="Choosing which apps to shield, with the toggle on">
+  <strong>One question before the apps you open without thinking: are you sure?</strong>
 </p>
 
 <p align="center">
-  <img src="docs/screenshots/shield.png" width="30%" alt="The shield asking Are you sure?, offering a one-minute wait">
-  <img src="docs/screenshots/shield-waiting.png" width="30%" alt="The shield during the wait, counting down the seconds left">
-  <img src="docs/screenshots/shield-ready.png" width="30%" alt="The shield after the wait, asking Still want to? and offering to unlock for 15 minutes">
+  Pick the apps. Opening one shows a shield instead.<br>
+  Say yes, wait a minute, and it's yours for fifteen. Say no, and it just closes.<br>
+  No streaks, no scores, no account. Nothing leaves your iPhone.
 </p>
+
+<p align="center">
+  <a href="https://apps.apple.com/app/id6761717073"><img alt="Download on the App Store" src="https://img.shields.io/badge/App%20Store-download-0d96f6?logo=apple&logoColor=white"></a>
+  <a href="LICENSE"><img alt="Licence: MIT" src="https://img.shields.io/badge/licence-MIT-3da639"></a>
+  <img alt="iOS 16 or newer" src="https://img.shields.io/badge/iOS-16%2B-14151a?logo=apple&logoColor=white">
+  <img alt="Built with Expo" src="https://img.shields.io/badge/app-Expo%20SDK%2054-000020?logo=expo&logoColor=white">
+  <img alt="Screen Time API" src="https://img.shields.io/badge/uses-Screen%20Time%20API-5856d6">
+  <a href="PRIVACY.md"><img alt="Data collected: none" src="https://img.shields.io/badge/data%20collected-none-22c55e"></a>
+</p>
+
+<p align="center">
+  <a href="#how-it-works">How it works</a> ·
+  <a href="#requirements">Requirements</a> ·
+  <a href="#building-it-yourself">Build it</a> ·
+  <a href="#layout">Layout</a> ·
+  <a href="SUPPORT.md">Support</a> ·
+  <a href="PRIVACY.md">Privacy</a>
+</p>
+
+<p align="center">
+  <img src="docs/screenshots/choose-apps.png" alt="Choosing which apps should ask, with the toggle on" width="190">
+  &nbsp;
+  <img src="docs/screenshots/shield.png" alt="The shield asking Are you sure?, offering a one-minute wait" width="190">
+  &nbsp;
+  <img src="docs/screenshots/shield-waiting.png" alt="The shield during the wait, counting down the seconds left" width="190">
+  &nbsp;
+  <img src="docs/screenshots/shield-ready.png" alt="The shield after the wait, asking Still want to? and offering to unlock for 15 minutes" width="190">
+</p>
+
+<br>
+
+> **Who it is for**
+>
+> - **You open some apps on reflex** and want a moment to notice before you're in.
+> - **You've tried hard limits** and switched them off the first time they got in the way. Intentful never refuses; it only asks, and makes you wait a minute.
+> - **You want it to stay on your phone.** No account, no server, no analytics — and the source is here to check.
 
 ## How it works
 
